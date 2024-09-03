@@ -3,6 +3,17 @@
 ## Overview
 This repository contains the microservices architecture for a platform designed to analyze codebases and generate interactive documentation. The platform is built using Docker to facilitate a microservices architecture, allowing each component to be scaled and maintained independently.
 
+## Installation and Setup
+1. Build and run the docker images
+    ```bash
+      docker-compose up --build
+    ```
+2. Stream aggregated logs from all containers
+    ```
+      docker-compose logs -f
+    ```
+Once the containers are running, navigating to http://localhost:3003 should respond with 'Code Analyzer API is running...'
+
 ## Services
 - **Auth**: Handles authentication and user management.
 - **Documentation**: Manages and serves dynamically generated documentation from code analysis data.
@@ -31,9 +42,5 @@ The `/common` directory contains shared libraries and utilities used across diff
 
 ## Getting Started
 To get started with this setup, clone the repository and navigate to the root directory. Use the following command to start all services:
-
-```z
-docker-compose up --build
-```
 
 For detailed service configuration, refer to individual Dockerfiles and the `docker-compose.yml` file in the root directory.
