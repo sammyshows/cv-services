@@ -2,20 +2,24 @@
   "name": "code-analysis",
   "version": "1.0.0",
   "description": "## Purpose This service performs deep code analysis, transforms codebases into ASTs, and populates the graph database with code structure and metadata. It supports various programming languages and provides the foundational data needed for the Documentation Service to generate meaningful insights and documentation.",
-  "main": "index.js",
+  "main": "src/app.ts",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "start": "node src/app.ts",
+    "dev": "ts-node src/app.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@babel/parser": "^7.25.6",
+    "@babel/traverse": "^7.25.6",
     "cors": "^2.8.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "neo4j-driver": "^5.24.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4"
+    "@types/node": "^22.5.2",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2"
   }
 }

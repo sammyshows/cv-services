@@ -14,4 +14,4 @@ RUN npm install
 EXPOSE 3000
 
 # Run the app when the container launches
-CMD ["npx", "nodemon", "app.js"]
+CMD ["npx", "nodemon", "--watch", "src", "--ext", "js,ts,json", "--exec", "ts-node src/app.ts"]

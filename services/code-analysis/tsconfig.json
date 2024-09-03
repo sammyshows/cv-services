@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "noImplicitAny": false,
+    "allowImportingTsExtensions": true,
+    "target": "esnext",        // Compile to a modern ECMAScript version
+    "module": "commonjs",      // Use commonjs module system, as Node.js does
+    "moduleResolution": "node",
+    "esModuleInterop": true,   // Enables compatibility with default imports from CommonJS modules
+    "allowSyntheticDefaultImports": true  // Allow default imports from modules with no default export
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
