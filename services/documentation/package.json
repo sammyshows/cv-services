@@ -1,0 +1,12 @@
+{
+  "name": "documentation",
+  "version": "1.0.0",
+  "description": "## Purpose The Documentation Service manages the retrieval and presentation of project documentation. This service is crucial for delivering structured documentation to users, including flowcharts, code blocks, and textual content that helps users understand and interact with their projects.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

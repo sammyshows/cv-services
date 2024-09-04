@@ -1,0 +1,12 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "description": "## Purpose The Auth Service is responsible for handling all authentication and authorization processes across the application. This includes user registration, login, session management, and security protocols to ensure safe access to application resources.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
