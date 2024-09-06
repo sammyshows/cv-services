@@ -15,12 +15,13 @@ services:
   #     - backend
   #   restart: unless-stopped
 
-  code-analysis:
-    build: ./services/code-analysis
+  language-parser:
+    build: ./services/language-parser
+    platform: linux/arm64
     ports:
       - "3003:3000"
     volumes:
-      - ./services/code-analysis:/usr/src/app
+      - ./services/language-parser:/app
     networks:
       - backend
     restart: unless-stopped
@@ -34,27 +35,14 @@ services:
       - "7474:7474"  # HTTP
       - "7687:7687"  # Bolt
     volumes:
-      - $HOME/neo4j/data:/data
-      - $HOME/neo4j/logs:/logs
-      - $HOME/neo4j/import:/var/lib/neo4j/import
-      - $HOME/neo4j/plugins:/plugins
+      - $HOME/code/neo4j/data:/data
+      - $HOME/code/neo4j/logs:/logs
+      - $HOME/code/neo4j/import:/import
+      - $HOME/code/neo4j/plugins:/plugins
+      - $HOME/code/neo4j/conf:/conf
     networks:
       - backend
     restart: unless-stopped
-
-  # nginx:
-  #   image: nginx:latest
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf
-  #   depends_on:
-  #     - auth
-  #     - documentation
-  #     - code-analysis
-  #   networks:
-  #     - backend
-  #   restart: unless-stopped
 
 networks:
   backend:
