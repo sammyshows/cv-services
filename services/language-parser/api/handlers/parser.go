@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"language-parser/internal/parser"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,14 +25,8 @@ func ParseContent(c *gin.Context) {
 		return
 	}
 
-	// Step 2: Normalise the AST
-	normalisedData, err := parser.NormaliseAST(ast, requestBody.Language)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error normalizing AST: " + err.Error()})
-		return
-	}
-
-	log.Println("Normalised data: ", normalisedData)
+	// return the AST
+	c.JSON(http.StatusOK, ast)
 
 	// // Step 3: Generate Cypher Queries
 	// queries := parser.GetCypherQueries(normalizedData)

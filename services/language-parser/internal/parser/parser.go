@@ -1,15 +1,13 @@
 package parser
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
-	"language-parser/internal/parser/types"
 	"log"
 	"os/exec"
 	"strings"
 )
 
-// ParseCode accepts code and language, then calls the appropriate parser subprocess
 func ParseContent(code string, language string) (interface{}, error) {
 	var cmd *exec.Cmd
 
@@ -17,50 +15,33 @@ func ParseContent(code string, language string) (interface{}, error) {
 	switch language {
 	case "javaScript":
 		// Call JavaScript parser subprocess
-		// cmd = exec.Command("node", "path_to_js_parser.js")
-		log.Println("Reached the JavaScript case of the parse switch statements")
+		cmd = exec.Command("node", "internal/parser/ast_scripts/javascript/parser.js")
 	case "go":
 		// Use `goparse` or similar to parse Go code
 		cmd = exec.Command("goparse", "--ast")
 	case "python":
 		// Use a subprocess to parse Python code, possibly using ast in Python
-		cmd = exec.Command("python", "path_to_python_parser.py")
+		cmd = exec.Command("python", "internal/parser/ast_scripts/python/parser.py")
 	default:
 		return nil, fmt.Errorf("unsupported language: %s", language)
 	}
 
-	return nil, nil
-
+	// Pass the code to the parser via stdin
 	cmd.Stdin = strings.NewReader(code)
 
-	// Get the output from the subprocess
-	output, err := cmd.Output()
+	// Capture the output from the parser
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+
+	// Run the command
+	err := cmd.Run()
 	if err != nil {
-		return nil, fmt.Errorf("error running %s parser: %v", language, err)
+		log.Println("Error running parser:", stderr.String())
+		return nil, err
 	}
 
-	var ast interface{}
-	// Unmarshal JSON output from the subprocess into the AST structure
-	if err := json.Unmarshal(output, &ast); err != nil {
-		return nil, fmt.Errorf("failed to parse AST JSON: %v", err)
-	}
-	return ast, nil
-}
-
-// NormaliseAst standardises the AST based on the language
-// func NormaliseAST(ast interface{}, language string) (types.NormalisedAST, error) {
-func NormaliseAST(ast interface{}, language string) (interface{}, error) {
-	// var normalised types.NormalisedAST
-	println("Normalising AST", ast)
-	switch language {
-	case "javascript":
-		return ast, nil
-		// return ast_normalise.NormaliseJavaScriptAST(ast)
-	// case "go":
-	// 	return ast_normalise.NormaliseGoAST(ast)
-	// case "python":
-	// 	return ast_normalise.NormalisePythonAST(ast)
-	default:
-		return types.NormalisedAST{}, fmt.Errorf("unsupported language: %s", language)
-	}
+	// Return the output as a string
+	return out.String(), nil
 }
