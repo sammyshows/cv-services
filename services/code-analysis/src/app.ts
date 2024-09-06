@@ -36,64 +36,66 @@ app.post('/parse/javascript', async (req, res) => {
         const ast = babelParser.parse(code, { sourceType: 'module' });
         let queries = [];
         let callStack = [];  // Stack to track function calls and their order
+        for (let i = 0; i < 50; i++) {
 
-        traverse(ast, {
-            FunctionDeclaration(path) {
-                const functionName = path.node.id ? path.node.id.name : 'anonymous';
-                const functionIdQuery = `CREATE (f:Function {name: "${functionName}", line: ${path.node.loc.start.line}}) RETURN id(f) AS id`;
-                queries.push(functionIdQuery);
-            },
-            CallExpression(path) {
-                const callerFunction = path.findParent((p) => p.isFunctionDeclaration());
-                const callerName = callerFunction ? callerFunction.node.id.name : 'anonymous';
-                const calledFunctionName = path.node.callee.name;
-                const line = path.node.loc.start.line;
+            traverse(ast, {
+                FunctionDeclaration(path) {
+                    const functionName = path.node.id ? path.node.id.name : 'anonymous';
+                    const functionIdQuery = `CREATE (f:Function {name: "${functionName}", line: ${path.node.loc.start.line}}) RETURN id(f) AS id`;
+                    queries.push(functionIdQuery);
+                },
+                CallExpression(path) {
+                    const callerFunction = path.findParent((p) => p.isFunctionDeclaration());
+                    const callerName = callerFunction ? callerFunction.node.id.name : 'anonymous';
+                    const calledFunctionName = path.node.callee.name;
+                    const line = path.node.loc.start.line;
 
-                if (path.findParent((p) => p.isConditionalExpression() || p.isIfStatement())) {
-                    // This call is part of a conditional statement
-                    const conditionalType = path.findParent((p) => p.isIfStatement()) ? 'if' : 'else';
-                    const relationshipQuery = `MATCH (caller:Function {name: "${callerName}"}), (callee:Function {name: "${calledFunctionName}"})
-                    CREATE (caller)-[:CONDITIONAL_CALL {type: "${conditionalType}", line: ${line}}]->(callee)`;
-                    queries.push(relationshipQuery);
-                } else {
-                    // Regular function call
-                    callStack.push({ caller: callerName, callee: calledFunctionName, line: line });
-                    const relationshipQuery = `MATCH (caller:Function {name: "${callerName}"}), (callee:Function {name: "${calledFunctionName}"})
-                    CREATE (caller)-[:CALLS {line: ${line}, order: ${callStack.length}}]->(callee)`;
-                    queries.push(relationshipQuery);
+                    if (path.findParent((p) => p.isConditionalExpression() || p.isIfStatement())) {
+                        // This call is part of a conditional statement
+                        const conditionalType = path.findParent((p) => p.isIfStatement()) ? 'if' : 'else';
+                        const relationshipQuery = `MATCH (caller:Function {name: "${callerName}"}), (callee:Function {name: "${calledFunctionName}"})
+                        CREATE (caller)-[:CONDITIONAL_CALL {type: "${conditionalType}", line: ${line}}]->(callee)`;
+                        queries.push(relationshipQuery);
+                    } else {
+                        // Regular function call
+                        callStack.push({ caller: callerName, callee: calledFunctionName, line: line });
+                        const relationshipQuery = `MATCH (caller:Function {name: "${callerName}"}), (callee:Function {name: "${calledFunctionName}"})
+                        CREATE (caller)-[:CALLS {line: ${line}, order: ${callStack.length}}]->(callee)`;
+                        queries.push(relationshipQuery);
+                    }
+                },
+                IfStatement(path) {
+                    const parentFunctionName = path.findParent((p) => p.isFunctionDeclaration())?.node.id.name || 'anonymous';
+                    // Extract a meaningful description of the condition
+                    let conditionDescription = '';
+                    if (path.node.test.type === 'CallExpression' && path.node.test.callee.name) {
+                        // When the test condition is a function call
+                        conditionDescription = `${path.node.test.callee.name}(${path.node.test.arguments.map(arg => arg.name || arg.value).join(', ')})`;
+                    } else {
+                        // Generic fallback for other types of conditions
+                        conditionDescription = path.node.test.type;
+                    }
+
+                    const ifLine = path.node.loc.start.line;
+
+                    const ifQuery = `MATCH (func:Function {name: "${parentFunctionName}"})
+                    CREATE (func)-[:CONDITIONAL {type: "if", line: ${ifLine}, condition: "${conditionDescription}" }]->(func)`;
+                    queries.push(ifQuery);
+
+                    // Handling else
+                    if (path.node.alternate) {
+                        const elseLine = path.node.alternate.loc.start.line;
+                        const elseQuery = `MATCH (func:Function {name: "${parentFunctionName}"})
+                        CREATE (func)-[:CONDITIONAL {type: "else", line: ${elseLine} }]->(func)`;
+                        queries.push(elseQuery);
+                    }
                 }
-            },
-            IfStatement(path) {
-                const parentFunctionName = path.findParent((p) => p.isFunctionDeclaration())?.node.id.name || 'anonymous';
-                // Extract a meaningful description of the condition
-                let conditionDescription = '';
-                if (path.node.test.type === 'CallExpression' && path.node.test.callee.name) {
-                    // When the test condition is a function call
-                    conditionDescription = `${path.node.test.callee.name}(${path.node.test.arguments.map(arg => arg.name || arg.value).join(', ')})`;
-                } else {
-                    // Generic fallback for other types of conditions
-                    conditionDescription = path.node.test.type;
-                }
+            });
 
-                const ifLine = path.node.loc.start.line;
-
-                const ifQuery = `MATCH (func:Function {name: "${parentFunctionName}"})
-                CREATE (func)-[:CONDITIONAL {type: "if", line: ${ifLine}, condition: "${conditionDescription}" }]->(func)`;
-                queries.push(ifQuery);
-
-                // Handling else
-                if (path.node.alternate) {
-                    const elseLine = path.node.alternate.loc.start.line;
-                    const elseQuery = `MATCH (func:Function {name: "${parentFunctionName}"})
-                    CREATE (func)-[:CONDITIONAL {type: "else", line: ${elseLine} }]->(func)`;
-                    queries.push(elseQuery);
-                }
-            }
-        });
-
-        // Execute all Cypher queries
+            // Execute all Cypher queries
+            console.log('Generated Cypher queries:', queries);
+        }
         const results = [];
-        console.log('Generated Cypher queries:', queries);
         for (const query of queries) {
             const result = await neo4j.run(query);
             results.push(result.records);

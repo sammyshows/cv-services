@@ -1,0 +1,45 @@
+# Binaries for programs
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.out
+
+# Output of build tools
+/bin/
+/build/
+/dist/
+/release/
+/tmp/
+
+# Go-specific files
+*.test
+*.prof
+*.trace
+*.cover
+*.mod
+*.sum
+
+# Vendor directory (if you're using go mod vendor)
+vendor/
+
+# Log and debug files
+*.log
+*.tmp
+
+# Editor or IDE specific files (depending on your IDE/editor)
+.vscode/
+.idea/
+*.swp
+*~
+
+# Mac-specific files
+.DS_Store
+
+# Node.js specific (if your project includes front-end or tooling with Node.js)
+node_modules/
+
+# Air hot-reload tool (if you're using it in Go)
+.air
+
