@@ -15,9 +15,9 @@ This repository contains the microservices architecture for a platform designed 
 Once the containers are running, navigating to http://localhost:3003 should respond with 'Code Analyzer API is running...'
 
 ## Services
+- **Language Parser**: Processes code to generate ASTs and populates a graph database with nodes and relationships.
 - **Auth**: Handles authentication and user management.
 - **Documentation**: Manages and serves dynamically generated documentation from code analysis data.
-- **Code Analysis**: Processes codebases to generate ASTs and populates a graph database for further analysis.
 
 ## Common Libraries
 The `/common` directory contains shared libraries and utilities used across different services. These are packaged and versioned, allowing services to update independently while sharing core functionality.
